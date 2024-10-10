@@ -23,7 +23,7 @@ class UserService {
   }
 
   suspend fun findUser(userId: Long, continuation: Continuation?): UserDto {
-    val sm = continuation as? FindUserContinuation ?: object : FindUserContinuation() {
+    val stateMachine = continuation as? FindUserContinuation ?: object : FindUserContinuation() {
       override suspend fun resumeWith(data: Any?) {
         when (label) {
           0 -> {
@@ -35,21 +35,23 @@ class UserService {
             label = 2
           }
         }
+        println("sateMachine 내부에서 findUser 실행. 현재 label = $label")
         findUser(userId, this)
+        println("sateMachine.resumeWith() 종료. 여기서 사용된 findUser의 반환값은 사용되지 않는다.")
       }
     }
 
-    when (sm.label) {
+    when (stateMachine.label) {
       0 -> { // 0단계 - 초기 시작
         println("프로필을 가져오겠습니다")
-        userProfileRepository.findProfile(userId, sm)
+        userProfileRepository.findProfile(userId, stateMachine)
       }
       1 -> { // 1단계 - 1차 중단 후 재시작
         println("이미지를 가져오겠습니다")
-        userImageRepository.findImage(sm.profile!!, sm)
+        userImageRepository.findImage(stateMachine.profile!!, stateMachine)
       }
     }
-    return UserDto(sm.profile!!, sm.image!!)
+    return UserDto(stateMachine.profile!!, stateMachine.image!!)  // 2단계
   }
 
 }

@@ -4,8 +4,11 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.future.await
 import java.util.concurrent.CompletableFuture
 
+fun main() {
+  lec08Example5()
+}
 
-fun main(): Unit = runBlocking {
+fun lec08Example5(): Unit = runBlocking {
   val result: Int? = withTimeoutOrNull(1_000L) {
     delay(1_500L)
     10 + 20
@@ -50,7 +53,7 @@ suspend fun call1(): Int {
 
 suspend fun call2(num: Int): Int {
   return CompletableFuture.supplyAsync {
-    Thread.sleep(1_000L)
+    Thread.sleep(1_000L)  // Possibly blocking call in non-blocking context could lead to thread starvation
     100
   }.await()
 }

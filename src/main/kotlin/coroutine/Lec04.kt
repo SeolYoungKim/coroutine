@@ -3,26 +3,31 @@ package coroutine
 import kotlinx.coroutines.*
 
 
-fun main(): Unit = runBlocking {
-  val job = launch {
+fun main() {
+  lec04Example3()
+}
+
+fun lec04Example3(): Unit = runBlocking {
+  val job = launch(Dispatchers.Default) {
     try {
       delay(1_000L)
     } catch (e: CancellationException) {
       // 아무것도 안한다!
+      printWithThread("CancellationException 발생. message: ${e.message}")
     } finally {
       // 필요한 자원을 닫을 수도 있습니다.
     }
 
-    printWithThread("delay에 의해 취소되지 않았다!")
+    printWithThread("작업이 취소되지 않았음")
   }
 
-  delay(100L)
-  printWithThread("취소 시작")
+  printWithThread("job.cancel() 호출")
   job.cancel()
 }
 
 
 fun lec04Example2(): Unit = runBlocking {
+  printWithThread("runBlocking 시작")
   val job = launch(Dispatchers.Default) {
     var i = 1
     var nextPrintTime = System.currentTimeMillis()
@@ -33,14 +38,17 @@ fun lec04Example2(): Unit = runBlocking {
       }
 
       if (!isActive) {
-        throw CancellationException()
+        throw CancellationException()  // 작업 취소
       }
     }
   }
 
-  delay(100L)
+//  delay(1000L)
+  yield()
   job.cancel()
+  printWithThread("runBlocking 종료")
 }
+
 
 fun lec04Example1(): Unit = runBlocking {
   val job1 = launch {
